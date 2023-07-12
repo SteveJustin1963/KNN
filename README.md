@@ -28,19 +28,20 @@ variable min-label      \ Initial minimum label count
 ;
 
 : classify ( sample -- label )
-  9999999 max-distance !
-  0 max-label !
-  0 min-distance !
-  0 min-label !
+  9999999 max-distance !   \ Set a large initial maximum distance
+  0 max-label !           \ Set initial maximum label count
+  0 min-distance !        \ Set initial minimum distance
+  0 min-label !           \ Set initial minimum label count
 
-  training-data 4 8 * swap
+  training-data           \ Pointer to the start of training data
+  4 8 * swap              \ Total size of the training data (4 samples of 8 bits each)
   0 do
-    i 8 * + swap
-    swap euclidean-distance
-    min-distance @ <
+    i 8 * +               \ Calculate the address of the current training sample
+    swap euclidean-distance  \ Calculate the distance between the sample and training sample
+    min-distance @ <      \ Check if the distance is less than the current minimum distance
     if
-      i 8 + min-distance !
-      i 1+ 2@ min-label !
+      i 8 + min-distance !   \ Update the minimum distance
+      i 1+ 2@ min-label !    \ Update the label count of the minimum distance
     then
   loop
 
@@ -57,14 +58,16 @@ variable min-label      \ Initial minimum label count
   cr
 ;
 
-create training-data
-0 , 0 ,
-0 , 1 ,
-1 , 0 ,
-1 , 1 ,
+: training-data
+  0 , 0 ,                 \ Sample 1: Features and label
+  0 , 1 ,                 \ Sample 2: Features and label
+  1 , 0 ,                 \ Sample 3: Features and label
+  1 , 1 ,                 \ Sample 4: Features and label
+;
 
 setup
 loop
+
 ```
 
 how the simplified K-Nearest Neighbors (KNN) code works:
