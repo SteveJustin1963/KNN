@@ -16,6 +16,8 @@ KNN is used in many different areas. For example, it can help computers recogniz
 Just like when you ask your friends for advice, KNN asks the most similar things to make good guesses or decisions.
 
 ```
+\\ NEEDS A LOT OF WORK! sudo forth not real forth
+
 variable max-distance   \ A large initial maximum distance
 variable max-label      \ Initial maximum label count
 variable min-distance   \ Initial minimum distance
