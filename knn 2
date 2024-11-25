@@ -1,0 +1,116 @@
+// Initialize KNN system 
+// Array a: training features (x,y pairs)
+// Array b: training labels (0 or 1)
+// Array c: distance calculations
+// Array d: sorted indices
+// k: number of neighbors to consider
+:I 
+[ 0 2 4 6 2 4 6 8 ] a!    
+[ 0 0 1 1 0 1 1 0 ] b!    
+[ 0 0 0 0 0 0 0 0 ] c!    
+[ 0 1 2 3 4 5 6 7 ] d!    
+3 k!
+;
+
+// Calculate Euclidean distance
+// Inputs: x y index
+// Output: squared distance
+// Uses variables x,y,i for coordinates and index
+:D
+i! y! x!
+// Calculate (x - x1)^2
+x i 2* a ? - " * 
+// Calculate (y - y1)^2
+y i 2* 1+ a ? - " * 
+// Sum squares
++
+;
+
+// Sort distances using bubble sort
+// Uses t as temporary variable for swapping
+// Uses i as loop counter
+:S
+// Outer loop for passes
+8(
+  // Inner loop for comparisons
+  7(
+    // Compare adjacent distances
+    /i d ? c ? /i 1+ d ? c ? > (
+      // Swap if current > next
+      /i d ? t!
+      /i 1+ d ? /i d ?!
+      t /i 1+ d ?!
+    )
+  )
+)
+;
+
+// Vote among K nearest neighbors
+// Uses v for class 0 count
+// Uses w for class 1 count
+:V
+// Initialize vote counters
+0 v! 0 w!
+// Loop k times
+k(
+  // Check label of current neighbor
+  /i d ? b ? /T = (
+    // Increment class 0 counter
+    v 1+ v!
+  ) /E (
+    // Increment class 1 counter
+    w 1+ w!
+  )
+)
+// Return majority vote (1 if w>v, 0 otherwise)
+v w > /T = .
+;
+
+// Classify new point
+// Inputs: x y coordinates to classify
+// Output: predicted class (0 or 1)
+:C
+y! x!
+// Calculate distances to all training points
+8(
+  x y /i D
+  /i c ?!
+)
+// Sort distances and vote
+S V
+;
+
+// Test classification on a 5x5 grid
+// Shows classification regions
+:T
+// Loop through x coordinates
+5(
+  // Loop through y coordinates
+  5(
+    // Classify each point in grid
+    /i 2* /j 2* C
+    // Add space between results
+    ` `
+  ) /N
+)
+;
+
+// Print training data points
+:P
+`Training Data:` /N
+// Loop through all training points
+8(
+  // Print x coordinate
+  `(` /i 2* a ? .
+  // Print y coordinate
+  `,` /i 2* 1+ a ? .
+  // Print label
+  `) -> ` /i b ? . /N
+)
+;
+
+// Example usage:
+// I           Initialize system
+// 3 5 C       Classify point at (3,5)
+// T           Show classification grid
+// P           Show all training data
