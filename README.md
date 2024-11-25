@@ -12,87 +12,216 @@ KNN is used in many different areas. For example, it can help computers recogniz
 
 Just like when you ask your friends for advice, KNN asks the most similar things to make good guesses or decisions.
 
+## MINT implementation 
+of KNN along with a clearer explanation of the algorithm and its implementation.
+
+```mint
+// K-Nearest Neighbors (KNN) for MINT
+// Uses array a for training data (features)
+// Uses array b for training labels
+// Uses array c for distances
+// Uses array d for sorted indices
+// K value is stored in k
+// Maximum of 8 training samples, 2 features per sample
+
+:I                     // Initialize KNN system
+  [ 0 2 4 6           // Feature 1 values (scaled 0-10)
+    2 4 6 8 ] a!      // Feature 2 values
+  [ 0 0 1 1           // Training labels (0 or 1)
+    0 1 1 0 ] b!      // 8 samples total
+  [ 0 0 0 0           // Distance calculation array
+    0 0 0 0 ] c!
+  [ 0 1 2 3           // Index array for sorting
+    4 5 6 7 ] d!      
+  3 k!                // Set K to 3
+;
+
+:D                     // Calculate distance (x y idx -- dist)
+  i!                  // Store index
+  y! x!               // Store test point (x,y)
+  // Calculate squared differences
+  x i 2* a ? - " *    // (x - x1)^2
+  y i 2* 1+ a ? - " * // (y - y1)^2
+  +                   // Sum squares
+;
+
+:S                     // Sort distances using bubble sort
+  8 (                // Outer loop
+    7 (              // Inner loop
+      /i d ? c ? /i 1+ d ? c ? > ( // Compare distances
+        /i d ? t!    // Swap indices if needed
+        /i 1+ d ? /i d ?!
+        t /i 1+ d ?!
+      )
+    )
+  )
+;
+
+:V                     // Vote among K nearest neighbors
+  0 v! 0 w!          // Clear vote counters
+  k @ (              // Loop K times
+    /i d ? b ? /T = ( // Check label
+      v 1+ v!        // Increment class 0
+    ) /E (
+      w 1+ w!        // Increment class 1
+    )
+  )
+  v w > /T = .       // Return majority vote
+;
+
+:C                     // Classify new point (x y -- label)
+  y! x!              // Store test point
+  8 (               // For each training sample
+    x y /i D        // Calculate distance
+    /i c ?!         // Store in distance array
+  )
+  S                 // Sort distances
+  V                 // Vote and return result
+;
+
+// Example usage:
+// I              // Initialize
+// 3 5 C          // Classify point (3,5)
+// Expected output: 1 or 0 based on nearest neighbors
+
+// Test multiple points
+:T                     // Test points in grid
+  5 (                // x coordinates
+    5 (             // y coordinates
+      /i 2* /j 2* C // Test point (2i,2j)
+      ` `          // Space between results
+    ) /N           // New line after each row
+  )
+;
+
+// Display functions
+:P                     // Print training data
+  `Training Data:` /N
+  8 (               // For each sample
+    `(` /i 2* a ? .
+    `,` /i 2* 1+ a ? .
+    `) -> ` /i b ? . /N
+  )
+;
+
 ```
-\\ NEEDS A LOT OF WORK! sudo forth not real forth
 
-variable max-distance   \ A large initial maximum distance
-variable max-label      \ Initial maximum label count
-variable min-distance   \ Initial minimum distance
-variable min-label      \ Initial minimum label count
 
-: euclidean-distance ( p1 p2 -- distance )
-  dup - abs           \ Calculate the absolute difference
-  dup * swap dup * +  \ Square the differences and sum them up
-  sqrt                \ Take the square root of the sum
-;
+# K-Nearest Neighbors (KNN) Algorithm Explanation
 
-: classify ( sample -- label )
-  9999999 max-distance !   \ Set a large initial maximum distance
-  0 max-label !           \ Set initial maximum label count
-  0 min-distance !        \ Set initial minimum distance
-  0 min-label !           \ Set initial minimum label count
+## Basic Concept
+K-Nearest Neighbors (KNN) is a simple but powerful classification algorithm that makes predictions based on the similarity between data points. Think of it as classifying something by looking at what category its nearest neighbors belong to.
 
-  training-data           \ Pointer to the start of training data
-  4 8 * swap              \ Total size of the training data (4 samples of 8 bits each)
-  0 do
-    i 8 * +               \ Calculate the address of the current training sample
-    swap euclidean-distance  \ Calculate the distance between the sample and training sample
-    min-distance @ <      \ Check if the distance is less than the current minimum distance
-    if
-      i 8 + min-distance !   \ Update the minimum distance
-      i 1+ 2@ min-label !    \ Update the label count of the minimum distance
-    then
-  loop
+## How It Works
 
-  min-label @
-;
+1. **Data Structure**
+   - Each data point has features (like coordinates in space)
+   - Each point has a known label (classification)
+   - Example: Points might be (x,y) coordinates, labels might be 0 or 1
 
-: setup ( -- )
-  \ Setup initialization, if required
-;
+2. **Classification Process**
+   - When given a new point to classify:
+     a. Calculate distances to all training points
+     b. Find the K nearest neighbors
+     c. Take a vote among these neighbors
+     d. Assign the majority class to the new point
 
-: loop ( -- )
-  \ Test data
-  1 0 classify .
-  cr
-;
+3. **Distance Calculation**
+   - Uses Euclidean distance: sqrt((x2-x1)² + (y2-y1)²)
+   - In our implementation, we use squared distance to avoid square root
 
-: training-data
-  0 , 0 ,                 \ Sample 1: Features and label
-  0 , 1 ,                 \ Sample 2: Features and label
-  1 , 0 ,                 \ Sample 3: Features and label
-  1 , 1 ,                 \ Sample 4: Features and label
-;
+## Implementation Details
 
-setup
-loop
+### Key Components
 
+1. **Arrays**
+   - `a`: Training data features (x,y coordinates)
+   - `b`: Training data labels (0 or 1)
+   - `c`: Calculated distances
+   - `d`: Sorted indices for nearest neighbor tracking
+
+2. **Key Functions**
+   - `D`: Calculate distance between points
+   - `S`: Sort distances using bubble sort
+   - `V`: Vote among K nearest neighbors
+   - `C`: Main classification function
+
+### Process Flow
+
+1. **Initialization** (`:I`)
+   - Sets up training data
+   - Initializes arrays
+   - Sets K value (number of neighbors)
+
+2. **Classification** (`:C`)
+   - Takes new point (x,y)
+   - Calculates distances to all training points
+   - Sorts distances
+   - Takes vote among K nearest neighbors
+   - Returns predicted class
+
+3. **Testing** (`:T`)
+   - Demonstrates classification across a grid
+   - Useful for visualizing decision boundaries
+
+## Usage Example
+
+```mint
+I               // Initialize system
+3 5 C          // Classify point at (3,5)
+T              // Test grid of points
+P              // Print training data
 ```
 
-how the simplified K-Nearest Neighbors (KNN) code works:
+## Limitations and Considerations
 
-1. The `euclidean-distance` word calculates the Euclidean distance between two data points. It takes two inputs, `p1` and `p2`, and calculates the absolute difference between corresponding elements, squares each difference, sums them up, and finally takes the square root of the sum.
+1. **Memory Usage**
+   - Limited to 8 training samples in this implementation
+   - 2 features per sample (x,y coordinates)
+   - Fixed K value (3 in this implementation)
 
-2. The `classify` word performs the KNN classification. It takes a `sample` as input and returns the predicted label.
+2. **Performance**
+   - Uses simple bubble sort (O(n²))
+   - Integer-based distance calculations
+   - No floating-point operations
 
-3. Variables `max-distance`, `max-label`, `min-distance`, and `min-label` are initialized to store distances and labels during classification.
+3. **Accuracy**
+   - Depends on training data quality
+   - Affected by choice of K
+   - Limited by feature scaling
 
-4. The `training-data` is a memory block that stores the feature and label pairs of the training samples. The provided code uses the `create` word to allocate memory and the `,` word to store the feature and label pairs in the memory.
+## Applications
 
-5. The `setup` word is a placeholder for any initialization that may be required before running the main program logic.
+KNN can be used for:
+- Pattern recognition
+- Data classification
+- Anomaly detection
+- Simple machine learning tasks
 
-6. The `loop` word is the main program logic. It calls the `classify` word with a test data sample and prints the predicted label.
+This implementation provides a basic but functional KNN classifier suitable for simple classification tasks on a small-scale embedded system.
 
-7. Inside the `classify` word, the maximum distance and label count are initially set to large values (`9999999` and `0`, respectively), and the minimum distance and label count are set to initial values (`0`).
 
-8. The `training-data` block is accessed using `training-data` and the total size of the training data is calculated.
+This implementation provides several advantages for a small system like the TEC:
 
-9. The KNN classification is performed by iterating over the training samples. For each training sample, the Euclidean distance between the `sample` and the training sample is calculated using `euclidean-distance`.
+1. Memory Efficient:
+   - Fixed-size arrays
+   - Integer-based calculations
+   - Minimal variable usage
 
-10. If the calculated distance is smaller than the current minimum distance, the minimum distance and corresponding label count are updated.
+2. Simple Processing:
+   - No complex math (no square roots)
+   - Basic sorting algorithm
+   - Straightforward voting system
 
-11. After iterating over all the training samples, the label with the minimum distance is returned as the predicted label.
+3. Easy to Understand:
+   - Clear function separation
+   - Simple data structures
+   - Demonstrable results
 
-12. Finally, in the `loop` word, the test data sample `[1, 0]` is passed to the `classify` word, and the predicted label is printed.
+## further work:
+1. Add visualization functions?
+2. Implement different distance metrics?
+3. Add support for more features?
+4. Include data preprocessing capabilities?
 
-Please note that this explanation is based on the assumption that the code is free from any further errors and the `euclidean-distance` and `classify` words are implemented correctly.
+   
