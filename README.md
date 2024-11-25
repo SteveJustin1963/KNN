@@ -1,8 +1,5 @@
 # tec-knn
-K-Nearest Neighbors, or KNN, to help guess or classify things based on what similar things are like
-
-
-KNN is a method to help guess or classify things based on what similar things are like. It's like having a group of friends, and when you need to make a decision, you ask your friends what they think.
+K-Nearest Neighbors, or KNN is a method to help guess or classify things based on what similar things are like. It's like having a group of friends, and when you need to make a decision, you ask your friends what they think.
 
 Here's how it works:
 1. Let's say you have some objects, like fruits, and you want to know if they are apples or oranges. You have a lot of apples and oranges that you already know the answer for.
