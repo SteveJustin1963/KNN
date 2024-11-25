@@ -24,8 +24,7 @@ of KNN along with a clearer explanation of the algorithm and its implementation.
 // Uses array b for training labels
 // Uses array c for distances
 // Uses array d for sorted indices
-// K value is stored in k
-// Maximum of 8 training samples, 2 features per sample
+// K value stored in k
 
 :I                     // Initialize KNN system
   [ 0 2 4 6           // Feature 1 values (scaled 0-10)
@@ -62,7 +61,7 @@ of KNN along with a clearer explanation of the algorithm and its implementation.
 
 :V                     // Vote among K nearest neighbors
   0 v! 0 w!          // Clear vote counters
-  k @ (              // Loop K times
+  k (                // Loop K times
     /i d ? b ? /T = ( // Check label
       v 1+ v!        // Increment class 0
     ) /E (
@@ -81,11 +80,6 @@ of KNN along with a clearer explanation of the algorithm and its implementation.
   S                 // Sort distances
   V                 // Vote and return result
 ;
-
-// Example usage:
-// I              // Initialize
-// 3 5 C          // Classify point (3,5)
-// Expected output: 1 or 0 based on nearest neighbors
 
 // Test multiple points
 :T                     // Test points in grid
@@ -106,7 +100,6 @@ of KNN along with a clearer explanation of the algorithm and its implementation.
     `) -> ` /i b ? . /N
   )
 ;
-
 ```
 
 
